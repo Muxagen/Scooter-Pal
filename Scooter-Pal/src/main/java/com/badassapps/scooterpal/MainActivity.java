@@ -1,4 +1,4 @@
-package com.badassapps.scooter_pal;
+package com.badassapps.scooterpal;
 
 import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
