@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +28,10 @@ public class MainActivity extends ActionBarActivity {
     private Location currentBestLocation;
 
     private int nullCounter;
+    private int nextSpeedLevel;
+    private long currentTime;
+
+    private boolean measuringAcceleration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,7 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+        measuringAcceleration = false;
     }
 
     @Override
@@ -92,45 +98,73 @@ public class MainActivity extends ActionBarActivity {
 
     private void makeUseOfNewLocation(Location newLocation) {
 
-        TextView tv;
+        TextView locationTV;
         Long speed = 0L;
 
         if (newLocation.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-            tv = (TextView)findViewById(R.id.gps_coordinates);
+            locationTV = (TextView)findViewById(R.id.gps_coordinates);
 
             if (currentGPSLocation == null) currentGPSLocation = newLocation;
             else speed = calculateSpeed(currentGPSLocation, newLocation);
 
-            tv.setText("GPS:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
-                        + "\n speed = " + speed + "m\\s");
+            locationTV.setText("GPS:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
+                    + "\n speed = " + speed + "m\\s");
+
+            TextView accelerationTV = (TextView)findViewById(R.id.acceleration);
+
+            if (measuringAcceleration == true) {
+                if (speed >= nextSpeedLevel) {
+                    if (nextSpeedLevel == 5) {
+                        currentTime = System.currentTimeMillis();
+                    } else {
+                        long accelerationTime = calculateAcceleration();
+                        accelerationTV.append("" + nextSpeedLevel + " - " + nextSpeedLevel + 10 + ": " + accelerationTime);
+                    }
+                    nextSpeedLevel += 10;
+                }
+            }
         }
         else if (newLocation.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
-            tv = (TextView)findViewById(R.id.network_coordinates);
+            locationTV = (TextView)findViewById(R.id.network_coordinates);
 
             if (currentNetworkLocation == null) currentNetworkLocation = newLocation;
             else speed = calculateSpeed(currentNetworkLocation, newLocation);
 
-            tv.setText("NETWORK:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
-                        + "\n speed = " + speed + "m\\s");
+            locationTV.setText("NETWORK:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
+                    + "\n speed = " + speed + "m\\s");
         } else {
-            tv = (TextView)findViewById(R.id.network_coordinates);
-            tv.setText("Location update from unknown Provider: " + newLocation.getProvider());
+            locationTV = (TextView)findViewById(R.id.network_coordinates);
+            locationTV.setText("Location update from unknown Provider: " + newLocation.getProvider());
         }
+    }
+
+    private long calculateAcceleration() {
+
+        long newCurrentTime = System.currentTimeMillis();
+        long levelTime = newCurrentTime - currentTime;
+        currentTime = newCurrentTime;
+        return levelTime;
     }
 
 
     //not using location.getSpeed() because it compares the distance to previous
     //gps location that might have been inaccurate
     private Long calculateSpeed(Location oldLocation, Location newLocation) {
-        Long speed;
-        float distance = newLocation.distanceTo(oldLocation);
-        if (distance < 1) {
-            speed = 0L;
+
+        TextView locationTV = (TextView)findViewById(R.id.gps_coordinates);
+
+        Double speed;
+        double distance = newLocation.distanceTo(oldLocation); //m
+        newLocation.getLongitude()
+        //locationTV.append("distance = " + distance);
+        if (distance < 0.001) {
+            speed = 0D;
         } else {
-            long time = (newLocation.getTime() - oldLocation.getTime()) / 1000;
-            speed = (long) distance / time;
+            double time = (newLocation.getTime() - oldLocation.getTime()); /// (1000*60*60); //h
+            speed = (time == 0D) ? 0 : distance / time;
+            speed = speed/3600;
         }
-        return  speed;
+        return  speed.longValue(); //km/h
     }
 
 
@@ -166,6 +200,23 @@ public class MainActivity extends ActionBarActivity {
 
     public void onClickReset(View v) {
         TextView acceleration = (TextView)findViewById(R.id.acceleration);
-        acceleration.setText("a=0.0 m/s²");
+        acceleration.setText("");
     }
+
+    public void onClickStart(View v) {
+
+        Button startBTN = (Button)findViewById(R.id.start);
+
+        if (!measuringAcceleration) {
+            nextSpeedLevel = 5;
+            currentTime = 0;
+            measuringAcceleration = true;
+            startBTN.setText("Stop");
+        } else {
+            measuringAcceleration = false;
+            startBTN.setText("Start");
+        }
+
+    }
+
 }

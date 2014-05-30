@@ -91,7 +91,7 @@
                 android:id="@+id/acceleration"
                 android:layout_gravity="center_horizontal"
                 android:textStyle="bold"
-                android:textSize="60dp"
+                android:textSize="30dp"
                 android:gravity="center" />
         </LinearLayout>
 
@@ -106,6 +106,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/btn_start"
                 android:id="@+id/start"
+                android:onClick="onClickStart"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:textSize="30sp" />
