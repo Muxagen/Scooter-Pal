@@ -14,6 +14,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -24,6 +25,8 @@ public class MainActivity extends ActionBarActivity {
     private Location currentGPSLocation;
     private Location currentNetworkLocation;
     private Location currentBestLocation;
+
+    private int nullCounter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +53,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        nullCounter = 0;
         registerLocationListener();
     }
 
@@ -60,8 +64,20 @@ public class MainActivity extends ActionBarActivity {
         // Define a listener that responds to location updates
         locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
-                // Called when a new location is found by the network location provider.
-                makeUseOfNewLocation(location);
+
+                if(location != null) {
+                    // Called when a new location is found by the network location provider.
+                    makeUseOfNewLocation(location);
+                }
+                else {
+                    nullCounter++;
+                    if (nullCounter > 3) {
+                        locationManager.removeUpdates(locationListener);
+                        Toast.makeText(getApplicationContext(),
+                                "Something terrible has happened with your GPS",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {}
