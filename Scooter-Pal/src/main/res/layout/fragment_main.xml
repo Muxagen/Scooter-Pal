@@ -8,30 +8,123 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="GPS LOCATION:"
-        android:id="@+id/gps_coordinates" />
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="NETWORK LOCATION:"
+        android:text="GPS:"
+        android:id="@+id/gps_coordinates" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="NETWORK:"
         android:id="@+id/network_coordinates" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="BEST:"
+        android:id="@+id/textView3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <View
+        android:id="@+id/firstDivider"
+        android:layout_height="1dp"
+        android:layout_width="fill_parent"
+        android:background="#000080" />
+
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="0dip"
         android:layout_weight="1"
         android:gravity="center|bottom"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:baselineAligned="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|top"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Best Speed:"
+                android:id="@+id/textView5" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Best acceleration:"
+                android:id="@+id/textView6" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="a=9.2 m/s²"
+                android:id="@+id/acceleration"
+                android:layout_gravity="center_horizontal"
+                android:textStyle="bold"
+                android:textSize="60dp"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom">
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_start"
+                android:id="@+id/start"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:textSize="30sp" />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_reset"
+                android:id="@+id/reset"
+                android:onClick="onClickReset"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:textSize="30dp" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=""
+            android:text=". . ."
             android:id="@+id/error"
             android:textColor="#ffc80000" />
     </LinearLayout>

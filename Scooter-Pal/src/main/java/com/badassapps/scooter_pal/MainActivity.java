@@ -21,6 +21,10 @@ public class MainActivity extends ActionBarActivity {
     private LocationManager locationManager;
     private LocationListener locationListener;
 
+    private Location currentGPSLocation;
+    private Location currentNetworkLocation;
+    private Location currentBestLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,14 +34,23 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
-
-        registerLocationListener();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
         locationManager.removeUpdates(locationListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerLocationListener();
     }
 
     private void registerLocationListener() {
@@ -61,19 +74,47 @@ public class MainActivity extends ActionBarActivity {
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
     }
 
-    private void makeUseOfNewLocation(Location location) {
+    private void makeUseOfNewLocation(Location newLocation) {
 
         TextView tv;
-        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+        Long speed = 0L;
+
+        if (newLocation.getProvider().equals(LocationManager.GPS_PROVIDER)) {
             tv = (TextView)findViewById(R.id.gps_coordinates);
-            tv.setText("GPS Location:\n" + location.getLatitude() + " " + location.getLongitude());
-        } else if (location.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+
+            if (currentGPSLocation == null) currentGPSLocation = newLocation;
+            else speed = calculateSpeed(currentGPSLocation, newLocation);
+
+            tv.setText("GPS:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
+                        + "\n speed = " + speed + "m\\s");
+        }
+        else if (newLocation.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
             tv = (TextView)findViewById(R.id.network_coordinates);
-            tv.setText("NETWORK Location:\n" + location.getLatitude() + " " + location.getLongitude());
+
+            if (currentNetworkLocation == null) currentNetworkLocation = newLocation;
+            else speed = calculateSpeed(currentNetworkLocation, newLocation);
+
+            tv.setText("NETWORK:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
+                        + "\n speed = " + speed + "m\\s");
         } else {
             tv = (TextView)findViewById(R.id.network_coordinates);
-            tv.setText("Location update from unknown Provider: " + location.getProvider());
+            tv.setText("Location update from unknown Provider: " + newLocation.getProvider());
         }
+    }
+
+
+    //not using location.getSpeed() because it compares the distance to previous
+    //gps location that might have been inaccurate
+    private Long calculateSpeed(Location oldLocation, Location newLocation) {
+        Long speed;
+        float distance = newLocation.distanceTo(oldLocation);
+        if (distance < 1) {
+            speed = 0L;
+        } else {
+            long time = (newLocation.getTime() - oldLocation.getTime()) / 1000;
+            speed = (long) distance / time;
+        }
+        return  speed;
     }
 
 
@@ -105,6 +146,10 @@ public class MainActivity extends ActionBarActivity {
                 Bundle savedInstanceState) {
             return inflater.inflate(R.layout.fragment_main, container, false);
         }
+    }
 
+    public void onClickReset(View v) {
+        TextView acceleration = (TextView)findViewById(R.id.acceleration);
+        acceleration.setText("a=0.0 m/s²");
     }
 }
