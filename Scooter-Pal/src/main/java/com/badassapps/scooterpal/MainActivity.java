@@ -22,203 +22,222 @@ import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
-    private static final int FIRST_LEVEL_SPEED = 5;
-    private static final int SPEED_LEVEL_STEP = 10;
+	private static final int FIRST_LEVEL_SPEED = 5;
+	private static final int SPEED_LEVEL_STEP = 10;
 
-    private LocationManager locationManager;
-    private LocationListener locationListener;
+	private LocationManager locationManager;
+	private LocationListener locationListener;
 
-    private Location currentGPSLocation;
-    private Location currentNetworkLocation;
-    private Location currentBestLocation; //TODO
+	private Location currentGPSLocation;
+	private Location currentNetworkLocation;
+	private Location currentBestLocation; //TODO
 
-    private final Handler handler = new Handler();
+	private final Handler handler = new Handler();
 
-    private int nullCounter;
-    private int nextSpeedLevel;
-    private long currentTime;
+	private int nullCounter;
+	private int nextSpeedLevel;
+	private long currentTime;
+	private int maxSpeed;
 
-    private boolean measuringAcceleration;
+	private boolean measuringAcceleration;
 
-    private static final String LOG_TAG = "MainActivity";
+	private static final String LOG_TAG = "MainActivity";
 
-    /*****************************Activity Lifecycle**********************************************/
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
-                    .commit();
-        }
-        nullCounter = 0;
-        measuringAcceleration = false;
-        registerLocationListener();
-    }
-    @Override
-    protected void onStart() {super.onStart();}
-    @Override
-    protected void onResume() {super.onResume();}
-    @Override
-    protected void onPause() {super.onPause();}
-    @Override
-    protected void onStop()	{super.onStop();}
+	/**
+	 * **************************Activity Lifecycle*********************************************
+	 */
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		if (savedInstanceState == null) {
+			getSupportFragmentManager().beginTransaction()
+					.add(R.id.container, new PlaceholderFragment())
+					.commit();
+		}
+		nullCounter = 0;
+		measuringAcceleration = false;
+		registerLocationListener();
+	}
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        locationManager.removeUpdates(locationListener);
-    }
-    /*********************************************************************************************/
+	@Override
+	protected void onStart() {
+		super.onStart();
+	}
 
-    /**
-     * register location listeners and handle location provider problems
-     */
-    private void registerLocationListener() {
+	@Override
+	protected void onResume() {
+		super.onResume();
+	}
 
-        // Acquire a reference to the system Location Manager
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+	@Override
+	protected void onPause() {
+		super.onPause();
+	}
 
-        // Define a listener that responds to location updates
-        locationListener = new LocationListener() {
+	@Override
+	protected void onStop() {
+		super.onStop();
+	}
 
-            public void onLocationChanged(Location location) {
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		locationManager.removeUpdates(locationListener);
+	}
+	/*********************************************************************************************/
 
-                if (location != null) {
-                    // Called when a new location is found by the network location provider.
-                    makeUseOfNewLocation(location);
-                }
-                else {
-                    nullCounter++;
-                    if (nullCounter > 3) {
-                        locationManager.removeUpdates(locationListener);
-                        nullCounter = 0;
+	/**
+	 * register location listeners and handle location provider problems
+	 */
+	private void registerLocationListener() {
 
-                        Toast.makeText(getApplicationContext(),
-                                "Something terrible has happened with your GPS",
-                                Toast.LENGTH_LONG).show();
-                        Log.d(LOG_TAG, "GPS location provider not available");
+		// Acquire a reference to the system Location Manager
+		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-                        // Try to register again in 5 seconds
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                registerLocationListener();
-                            }
-                        }, 5000);
-                    }
-                }
-            }
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-            public void onProviderEnabled(String provider) {}
-            public void onProviderDisabled(String provider) {}
-        };
+		// Define a listener that responds to location updates
+		locationListener = new LocationListener() {
 
-        // Register the listener with the Location Manager to receive location updates
-        try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-        } catch (IllegalArgumentException e) {
-            Toast.makeText(this, "GPS location provider not available", Toast.LENGTH_LONG).show();
-            Log.d(LOG_TAG, "GPS location provider not available");
-        }
-        try {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-        } catch (IllegalArgumentException e) {
-            Toast.makeText(this, "Network location provider not available", Toast.LENGTH_LONG).show();
-            Log.d(LOG_TAG, "Network location provider not available");
-        }
-    }
+			public void onLocationChanged(Location location) {
 
-    /**
-     *
-     * @param newLocation
-     */
-    private void makeUseOfNewLocation(Location newLocation) {
+				if (location != null) {
+					// Called when a new location is found by the network location provider.
+					makeUseOfNewLocation(location);
+				} else {
+					nullCounter++;
+					if (nullCounter > 3) {
+						locationManager.removeUpdates(locationListener);
+						nullCounter = 0;
 
-        TextView locationTV;
-        Long speed = 0L;
+						Toast.makeText(getApplicationContext(),	R.string.gps_provider_lost,	Toast.LENGTH_LONG).show();
+						Log.d(LOG_TAG, "GPS location provider not available");
 
-        if (newLocation.getProvider().equals(LocationManager.GPS_PROVIDER)) {
-            locationTV = (TextView)findViewById(R.id.gps_coordinates);
+						// Try to register again in 5 seconds
+						handler.postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								registerLocationListener();
+							}
+						}, 5000);
+					}
+				}
+			}
+			public void onStatusChanged(String provider, int status, Bundle extras) {}
+			public void onProviderEnabled(String provider) {}
+			public void onProviderDisabled(String provider) {}
+		};
 
-            if (currentGPSLocation == null) currentGPSLocation = newLocation;
-            else speed = calculateSpeed(currentGPSLocation, newLocation);
+		// Register the listener with the Location Manager to receive location updates
+		try {
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+		} catch (IllegalArgumentException e) {
+			Toast.makeText(this, "GPS location provider not available", Toast.LENGTH_LONG).show();
+			Log.d(LOG_TAG, "GPS location provider not available");
+		}
+		try {
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+		} catch (IllegalArgumentException e) {
+			Toast.makeText(this, "Network location provider not available", Toast.LENGTH_LONG).show();
+			Log.d(LOG_TAG, "Network location provider not available");
+		}
+	}
 
-            locationTV.setText("GPS:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
-                    + "\n speed = " + speed + "km/h");
+	/**
+	 * @param newLocation
+	 */
+	private void makeUseOfNewLocation(Location newLocation) {
 
-            TextView accelerationTV = (TextView)findViewById(R.id.acceleration);
+		TextView locationTV;
+		Long speed = 0L;
 
-            // if the measurements are running
-            if (measuringAcceleration == true) {
-                // if the next speed 'level' has been reached
-                if (speed >= nextSpeedLevel) {
-                    // for the first 'level' only init the currentTime
-                    if (nextSpeedLevel == FIRST_LEVEL_SPEED) {
-                        currentTime = System.currentTimeMillis();
-                    } else {
-                        long accelerationTime = calculateAcceleration();
-                        accelerationTV.append("" + nextSpeedLevel + " - " + (nextSpeedLevel + SPEED_LEVEL_STEP)
+		if (newLocation.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+			locationTV = (TextView) findViewById(R.id.gps_coordinates);
+
+			if (currentGPSLocation == null) currentGPSLocation = newLocation;
+			else speed = calculateSpeed(currentGPSLocation, newLocation);
+
+			locationTV.setText("GPS:\n  " + newLocation.getLatitude() + " " + newLocation.getLongitude()
+					+ "\n  speed = " + speed + "km/h"
+					+ "\n  accuracy = " + newLocation.getAccuracy());
+
+			TextView accelerationTV = (TextView) findViewById(R.id.acceleration);
+
+			// if the measurements are running
+			if (measuringAcceleration == true) {
+				// if the next speed 'level' has been reached
+				if (speed >= nextSpeedLevel) {
+					// for the first 'level' only init the currentTime
+					if (nextSpeedLevel == FIRST_LEVEL_SPEED) {
+						currentTime = System.currentTimeMillis();
+					} else {
+						long accelerationTime = calculateAcceleration();
+						accelerationTV.append("" + nextSpeedLevel + " - " + (nextSpeedLevel + SPEED_LEVEL_STEP)
 								+ ": " + accelerationTime + "\n");
-                    }
-                    nextSpeedLevel += SPEED_LEVEL_STEP;
-                }
-            }
-        }
-        else if (newLocation.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
-            locationTV = (TextView)findViewById(R.id.network_coordinates);
+					}
+					nextSpeedLevel += SPEED_LEVEL_STEP;
+				}
+			}
+		} else if (newLocation.getProvider().equals(LocationManager.NETWORK_PROVIDER)) {
+			locationTV = (TextView) findViewById(R.id.network_coordinates);
 
-            if (currentNetworkLocation == null) currentNetworkLocation = newLocation;
-            else speed = calculateSpeed(currentNetworkLocation, newLocation);
+			if (currentNetworkLocation == null) currentNetworkLocation = newLocation;
+			else speed = calculateSpeed(currentNetworkLocation, newLocation);
 
-            locationTV.setText("NETWORK:\n" + newLocation.getLatitude() + " " + newLocation.getLongitude()
-                    + "\n speed = " + speed + "km/h");
-        } else {
-            locationTV = (TextView)findViewById(R.id.network_coordinates);
-            locationTV.setText("Location update from unknown Provider: " + newLocation.getProvider());
-        }
-    }
+			locationTV.setText("NETWORK:\n  " + newLocation.getLatitude() + " " + newLocation.getLongitude()
+					+ "\n  speed = " + speed + "km/h");
+		} else {
+			locationTV = (TextView) findViewById(R.id.network_coordinates);
+			locationTV.setText("Location update from unknown Provider: " + newLocation.getProvider());
+		}
+	}
 
-    /**
-     * Calculate acceleration as time spent on accelerating to the speed of the next 'level'
-     * and set the new currentTime value for next calculation
-     * @return time spent on accelerating to next 'level' in seconds
-     */
-    private long calculateAcceleration() {
+	/**
+	 * Calculate acceleration as time spent on accelerating to the speed of the next 'level'
+	 * and set the new currentTime value for next calculation
+	 *
+	 * @return time spent on accelerating to next 'level' in seconds
+	 */
+	private long calculateAcceleration() {
 
-        long newCurrentTime = System.currentTimeMillis();
-        long levelTime = newCurrentTime - this.currentTime;
-        this.currentTime = newCurrentTime;
-        return levelTime / 1000;
-    }
+		long newCurrentTime = System.currentTimeMillis();
+		long levelTime = newCurrentTime - this.currentTime;
+		this.currentTime = newCurrentTime;
+		return levelTime / 1000;
+	}
 
-    /**
-     *
-     * not using location.getSpeed() because it compares the distance to previous
-     * gps location that might have been inaccurate
-     * @param oldLocation
-     * @param newLocation
-     * @return
-     */
-    private Long calculateSpeed(Location oldLocation, Location newLocation) {
+	/**
+	 * not using location.getSpeed() because it compares the distance to previous
+	 * gps location that might have been inaccurate
+	 *
+	 * @param oldLocation
+	 * @param newLocation
+	 * @return
+	 */
+	private Long calculateSpeed(Location oldLocation, Location newLocation) {
 
-        TextView locationTV = (TextView)findViewById(R.id.gps_coordinates);
+		TextView locationTV = (TextView) findViewById(R.id.gps_coordinates);
 
-        Double speed;
-        double distance = distance(oldLocation, newLocation) / 1000;//km //newLocation.distanceTo(oldLocation); //m
-        //locationTV.append("distance = " + distance);
-        if (distance < 0.001) {
-            speed = 0d;
-        } else {
-			//TODO: getElapsedRealtimeNanos is API Level 17, so change back to getTime or invent something else 
-            //double time_in_millis = (newLocation.getTime() - oldLocation.getTime());
+		Double speed;
+		double distance = distance(oldLocation, newLocation) / 1000;//km //newLocation.distanceTo(oldLocation); //m
+		//locationTV.append("distance = " + distance);
+		if (distance < 0.001) {
+			speed = 0d;
+		} else {
+			//TODO: getElapsedRealtimeNanos is API Level 17, so change back to getTime or invent something else
+			//double time_in_millis = (newLocation.getTime() - oldLocation.getTime());
 			double time_in_millis = (newLocation.getElapsedRealtimeNanos() - oldLocation.getElapsedRealtimeNanos());
 			double time_in_hours = time_in_millis / 3600000000000d;
-            speed = (time_in_hours == 0d) ? 0 : distance / time_in_hours;
-        }
-        return  speed.longValue(); //km/h
-    }
+			speed = (time_in_hours == 0d) ? 0 : distance / time_in_hours;
+		}
+		if (measuringAcceleration) {
+			if (speed > maxSpeed) {
+				maxSpeed = speed.intValue();
+				TextView maxSpeedTV = (TextView) findViewById(R.id.maxSpeed);
+				maxSpeedTV.setText(getString(R.string.best_speed) + maxSpeed);
+			}
+		}
+		return speed.longValue(); //km/h
+	}
 
 
 	/**
@@ -229,12 +248,14 @@ public class MainActivity extends ActionBarActivity {
 		double b = (location1.getLongitude() - location2.getLongitude()) * distPerLng(location1.getLongitude());
 		return Math.sqrt(a * a + b * b);
 	}
+
 	private double distPerLng(double lat) {
-		return    0.0003121092 * Math.pow(lat, 4)
+		return	  0.0003121092 * Math.pow(lat, 4)
 				+ 0.0101182384 * Math.pow(lat, 3)
 				- 17.2385140059 * lat * lat
 				+ 5.5485277537 * lat + 111301.967182595;
 	}
+
 	private double distPerLat(double lat) {
 		return  - 0.000000487305676 * Math.pow(lat, 4)
 				- 0.0033668574 * Math.pow(lat, 3)
@@ -243,57 +264,59 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return item.getItemId() == R.id.action_settings || super.onOptionsItemSelected(item);
-    }
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		return item.getItemId() == R.id.action_settings || super.onOptionsItemSelected(item);
+	}
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
+	/**
+	 * A placeholder fragment containing a simple view.
+	 */
+	public static class PlaceholderFragment extends Fragment {
 
-        public PlaceholderFragment() {
-        }
+		public PlaceholderFragment() {
+		}
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_main, container, false);
-        }
-    }
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+			return inflater.inflate(R.layout.fragment_main, container, false);
+		}
+	}
 
-    public void onClickReset(View v) {
-        TextView acceleration = (TextView)findViewById(R.id.acceleration);
-        acceleration.setText("");
-    }
+	public void onClickReset(View v) {
+		TextView acceleration = (TextView) findViewById(R.id.acceleration);
+		TextView maxSpeed = (TextView) findViewById(R.id.maxSpeed);
+		acceleration.setText("");
+		maxSpeed.setText(getText(R.string.best_speed));
+	}
 
-    public void onClickStart(View v) {
+	public void onClickStart(View v) {
 
-        Button startBTN = (Button)findViewById(R.id.start);
-        Button resetBTN = (Button)findViewById(R.id.reset);
+		Button startBTN = (Button) findViewById(R.id.start);
+		Button resetBTN = (Button) findViewById(R.id.reset);
 
-        if (!measuringAcceleration) {
-            nextSpeedLevel = 5;
-            currentTime = 0;
-            measuringAcceleration = true;
-            startBTN.setText("Stop");
-            resetBTN.setEnabled(false);
-        } else {
-            measuringAcceleration = false;
-            startBTN.setText("Start");
-            resetBTN.setEnabled(true);
-        }
-    }
+		if (!measuringAcceleration) {
+			nextSpeedLevel = 5;
+			currentTime = 0;
+			maxSpeed = 0;
+			measuringAcceleration = true;
+			startBTN.setText(R.string.btn_stop);
+			resetBTN.setEnabled(false);
+		} else {
+			measuringAcceleration = false;
+			startBTN.setText(R.string.btn_start);
+			resetBTN.setEnabled(true);
+		}
+	}
 
 }

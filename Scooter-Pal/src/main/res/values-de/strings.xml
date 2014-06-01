@@ -2,12 +2,12 @@
 <resources>
 
     <string name="app_name">Scooter-Pal</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Einstellungen</string>
     <string name="btn_start">Start</string>
     <string name="btn_stop">Stop</string>
     <string name="btn_reset">Reset</string>
 
-    <string name="best_speed">Best Speed: </string>
+    <string name="best_speed">Maximale Geschwindigkeit: </string>
 
     <string name="gps_provider_lost">Something terrible has happened with your GPS</string>
 

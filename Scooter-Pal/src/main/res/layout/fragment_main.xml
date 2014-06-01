@@ -74,15 +74,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Best Speed:"
-                android:id="@+id/textView5" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Best acceleration:"
-                android:id="@+id/textView6" />
+                android:text="@string/best_speed"
+                android:id="@+id/maxSpeed" />
 
             <TextView
                 android:layout_width="match_parent"
