@@ -13,7 +13,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="GPS:"
         android:id="@+id/gps_coordinates" />
 
@@ -24,7 +24,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="NETWORK:"
         android:id="@+id/network_coordinates" />
 
@@ -35,7 +35,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="BEST:"
         android:id="@+id/textView3" />
 
@@ -87,12 +87,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="a=9.2 m/s²"
+                android:text=""
                 android:id="@+id/acceleration"
                 android:layout_gravity="center_horizontal"
                 android:textStyle="bold"
-                android:textSize="30dp"
-                android:gravity="center" />
+                android:textSize="25dp" />
         </LinearLayout>
 
         <LinearLayout
